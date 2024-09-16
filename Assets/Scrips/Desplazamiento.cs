@@ -5,37 +5,48 @@ using UnityEngine.EventSystems;  // Importa para usar IPointerDownHandler y IPoi
 
 public class Desplazamiento : MonoBehaviour
 {
-    // Distancia que el coche se moverá con cada botón
-    public float moveSpeed = 5.0f;
-
-    // Límites de movimiento en el eje X, modificables desde el Inspector
+    public float moveSpeed = 5.0f;  // Velocidad de movimiento
     public float leftLimit = -5.0f;  // Límite izquierdo
     public float rightLimit = 5.0f;  // Límite derecho
-
-    // Suavidad del movimiento
     public float smoothTime = 0.2f;  // Tiempo de suavizado
 
-    // Posición inicial del objeto
-    private Vector3 initialPosition;
+    private Vector3 initialPosition;  // Posición inicial del objeto
+    private Vector3 targetPosition;  // Posición objetivo hacia donde se mueve el objeto
+    private Vector3 velocity = Vector3.zero;  // Velocidad para SmoothDamp
 
-    // Variables para la interpolación
-    private Vector3 targetPosition;  // Posición a la que se está moviendo el objeto
-    private Vector3 velocity = Vector3.zero;  // Velocidad utilizada por el suavizado
+    private bool isMovingLeft = false;  // ¿Está moviéndose a la izquierda?
+    private bool isMovingRight = false;  // ¿Está moviéndose a la derecha?
 
-    // Variables para detectar si se está presionando un botón de UI
-    private bool isMovingLeft = false;
-    private bool isMovingRight = false;
+    private GameObject botonIzquierda;  // Botón de mover a la izquierda
+    private GameObject botonDerecha;  // Botón de mover a la derecha
 
-    private void Start()
+    void Start()
     {
-        // Almacena la posición inicial en el eje Y y Z, y fija el eje X en 0
+        // Almacena la posición inicial
         initialPosition = new Vector3(0, transform.position.y, transform.position.z);
+        transform.position = initialPosition;  // Establece la posición inicial
+        targetPosition = transform.position;  // Fija la posición objetivo inicial
 
-        // Restablece la posición del objeto a la posición inicial
-        transform.position = initialPosition;
+        // Encuentra los botones con los tags "B-izquierda" y "B-derecha"
+        botonIzquierda = GameObject.FindGameObjectWithTag("B-izquierda");
+        botonDerecha = GameObject.FindGameObjectWithTag("B-derecha");
 
-        // Establece la posición objetivo inicial como la actual
-        targetPosition = transform.position;
+        // Asegúrate de que los botones existen y añade los eventos de UI correspondientes
+        if (botonIzquierda != null)
+        {
+            // Añadir eventos al botón de la izquierda
+            EventTrigger triggerIzquierda = botonIzquierda.AddComponent<EventTrigger>();
+            AddEventTrigger(triggerIzquierda, EventTriggerType.PointerDown, OnPointerDownLeft);
+            AddEventTrigger(triggerIzquierda, EventTriggerType.PointerUp, OnPointerUpLeft);
+        }
+
+        if (botonDerecha != null)
+        {
+            // Añadir eventos al botón de la derecha
+            EventTrigger triggerDerecha = botonDerecha.AddComponent<EventTrigger>();
+            AddEventTrigger(triggerDerecha, EventTriggerType.PointerDown, OnPointerDownRight);
+            AddEventTrigger(triggerDerecha, EventTriggerType.PointerUp, OnPointerUpRight);
+        }
     }
 
     void Update()
@@ -50,8 +61,16 @@ public class Desplazamiento : MonoBehaviour
             MoveRight();
         }
 
-        // Mueve el objeto de forma suave hacia la posición objetivo
+        // Mueve el objeto suavemente hacia la posición objetivo
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
+    }
+
+    // Función que añade eventos al botón
+    private void AddEventTrigger(EventTrigger trigger, EventTriggerType eventType, System.Action action)
+    {
+        EventTrigger.Entry entry = new EventTrigger.Entry { eventID = eventType };
+        entry.callback.AddListener((eventData) => { action(); });
+        trigger.triggers.Add(entry);
     }
 
     // Función que será llamada cuando el botón "Izquierda" esté presionado
@@ -81,13 +100,9 @@ public class Desplazamiento : MonoBehaviour
     // Función para moverse a la izquierda
     private void MoveLeft()
     {
-        // Calcula la nueva posición en el eje X
         float newX = transform.position.x - moveSpeed * Time.deltaTime;
-
-        // Asegúrate de que no sobrepase el límite izquierdo
         if (newX >= leftLimit)
         {
-            // Establece la nueva posición objetivo si está dentro de los límites
             targetPosition = new Vector3(newX, transform.position.y, transform.position.z);
         }
     }
@@ -95,21 +110,16 @@ public class Desplazamiento : MonoBehaviour
     // Función para moverse a la derecha
     private void MoveRight()
     {
-        // Calcula la nueva posición en el eje X
         float newX = transform.position.x + moveSpeed * Time.deltaTime;
-
-        // Asegúrate de que no sobrepase el límite derecho
         if (newX <= rightLimit)
         {
-            // Establece la nueva posición objetivo si está dentro de los límites
             targetPosition = new Vector3(newX, transform.position.y, transform.position.z);
         }
     }
 
-    // Función opcional para restablecer manualmente la posición si lo necesitas
+    // Función opcional para restablecer la posición inicial
     public void ResetPosition()
     {
-        // Restablece la posición del objeto a la posición inicial (en X = 0)
         targetPosition = initialPosition;
         transform.position = initialPosition;
     }

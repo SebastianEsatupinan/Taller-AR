@@ -12,76 +12,58 @@ public class PanelControl : MonoBehaviour
     // Referencia al ARTrackedImageManager para el tracking de imágenes
     public ARTrackedImageManager trackedImageManager;
 
-    // Botón que activa el tracking y alterna entre paneles
     public Button startButton;
 
     private bool isTrackingEnabled = false;  // Estado del tracking
-    private int currentPanelIndex = 0;  // Índice del panel actual
 
-    // Start es llamado al iniciar el script
     void Start()
     {
         // Desactivamos el seguimiento de imágenes al inicio
         trackedImageManager.enabled = false;
 
-        // Mostramos el primer panel al inicio
-        ShowPanel(currentPanelIndex);
+        ShowSpecificPanel(0);  // Muestra el panel con índice 0 al inicio
 
-        // Añadimos el listener al botón para que se active el tracking y cambie el panel cuando se presione
         startButton.onClick.AddListener(OnStartButtonPressed);
     }
 
     // Función llamada cuando el botón es presionado
     void OnStartButtonPressed()
     {
-        // Habilitamos el AR Tracked Image Manager para comenzar el tracking de imágenes
-        trackedImageManager.enabled = true;
+        EnableTracking(true);
 
-        // Cambiamos el estado del tracking
-        isTrackingEnabled = true;
+        ShowSpecificPanel(1);
+    }
 
-        // Ocultamos el panel actual y mostramos el siguiente
-        NextPanel();
-
-        // Opcional: Deshabilitar el botón si solo necesitas activarlo una vez
-        // startButton.gameObject.SetActive(false);
+    // Método público para activar o desactivar el tracking
+    public void EnableTracking(bool enable)
+    {
+        trackedImageManager.enabled = enable;
+        isTrackingEnabled = enable;
     }
 
     // Función para mostrar un panel específico por índice
-    public void ShowPanel(int index)
+    public void ShowSpecificPanel(int index)
     {
-        for (int i = 0; i < panels.Length; i++)
+        HideAllPanels();  // Oculta todos los paneles primero
+        if (index >= 0 && index < panels.Length)
         {
-            if (i == index)
-            {
-                panels[i].SetActive(true);  // Mostramos el panel en el índice
-            }
-            else
-            {
-                panels[i].SetActive(false);  // Ocultamos los demás paneles
-            }
+            panels[index].SetActive(true);  // Muestra el panel especificado
         }
     }
 
-    // Función para ocultar el panel actual y mostrar el siguiente
-    public void NextPanel()
+    // Método público para ocultar todos los paneles
+    public void HideAllPanels()
     {
-        // Ocultar el panel actual
-        panels[currentPanelIndex].SetActive(false);
-
-        // Incrementar el índice del panel (si llegamos al final volvemos al primero)
-        currentPanelIndex = (currentPanelIndex + 1) % panels.Length;
-
-        // Mostrar el siguiente panel
-        panels[currentPanelIndex].SetActive(true);
+        foreach (GameObject panel in panels)
+        {
+            panel.SetActive(false);
+        }
     }
-
-    // Update es llamado una vez por frame (puedes añadir lógica adicional aquí si la necesitas)
     void Update()
     {
         if (isTrackingEnabled)
         {
-            // Lógica adicional mientras el tracking está habilitado
+
         }
     }
 }

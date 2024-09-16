@@ -5,6 +5,11 @@ TagManager:
   serializedVersion: 2
   tags:
   - Obstaculo
+  - B-inicio
+  - B-izquierda
+  - B-derecha
+  - B-empezar
+  - B-reiniciar
   layers:
   - Default
   - TransparentFX
